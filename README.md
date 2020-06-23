@@ -5,4 +5,4 @@ The user can pan and zoom synchronously between two 3dViews. It turns blender in
 - a couple of oriented and georeferenced cameras e.g. issued from [MicMac](https://github.com/micmacIGN/micmac),
 - and a set of georeferenced data handled with [Blender GIS](https://github.com/domlysz/BlenderGIS).
 
-![](https://raw.githubusercontent.com/wiki/xyleme/syncview/capture.jpg)
+![](https://github.com/xyleme/syncview/blob/master/capture.jpg)https://github.com/xyleme/syncview/blob/master/capture.jpghttps://github.com/xyleme/syncview/blob/master/capture.jpg
