@@ -13,5 +13,11 @@ My own hardware setup involves a Wild ST4 stereoscope mounted ahead of a monitor
 Basically install the AddOn the usual way, then split the Default 3dView, assign a local camera to each 3dView. The 'Syncview settings' menu displays in the Tool shelf (Ctrl+T), allowing to set up left and right cameras. Via a modified keymap within both 3dViews:
 - the synchronous panning is accessed by Shift+Alt+MMB;
 - the synchronous zooming is accessed by Ctrl+Alt+MMB;
-The 'Lock View Rotation' toggle prevents the user to bail out of Camera view.
+
+The 'Lock View Rotation' toggle prevents the user from bailing out of Camera view.
+
 In addition the 'Auto align view' button performs a (rough) relative automated alignment when you're lost...
+
+For the time being the 'stv pan' slider is a work in progress. Right now it is possible to tweak this value to adjust the panning factor, especially when the camera view is highly magnified.
+
+Enjoy ;-)
