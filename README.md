@@ -8,6 +8,8 @@ The user can pan and zoom synchronously between two 3dViews. It turns blender in
 ![](https://github.com/xyleme/syncview/blob/master/capture.jpg)
 
 My own hardware setup involves a Wild ST4 stereoscope mounted ahead of a monitor. This is a dual purpose montage initially used to make photo-interpretation.
+![](https://github.com/xyleme/syncview/blob/master/syncview_st4_l.jpg)
+
 
 ## Usage
 Basically install the AddOn the usual way, then split the Default 3dView, assign a local camera to each 3dView. The 'Syncview settings' menu displays in the Tool shelf (Ctrl+T), allowing to set up left and right cameras. Via a modified keymap within both 3dViews:
