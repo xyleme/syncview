@@ -19,12 +19,16 @@ Basically install the AddOn the usual way, then split the Default 3dView, assign
 - the synchronous zooming is accessed by Ctrl+Alt+MMB;
 The latter is x-y responsive:
 - y-direction stands for zooming factor;
-- x-direction stands for the gap distance between views, providing an intuitive way to manage this tricky aspect of stereoscopic effect e.g. on deep scenes.
+- x-direction stands for the gap distance between views, providing an intuitive way to manage this tricky aspect of stereoscopic effect *e.g.* on deep scenes.
 
-The 'Lock View Rotation' toggle prevents the user from bailing out of Camera view.
+<p align="center">
+  <img width="260" height="246" src="https://github.com/xyleme/syncview/blob/master/capture_panel.jpg">
+</p>
 
-In addition the 'Auto align view' button performs a (rough) relative automated alignment when you're lost...
+The *Lock View Rotation* toggle prevents the user from bailing out of Camera view.
 
-The 'stv pan' slider allows to adjust the panning factor, especially when the camera view is highly magnified.
+In addition the *Auto align view* button performs a (rough) relative automated alignment when you're lost...
+
+The *Pan ratio* slider allows to adjust the panning factor, especially when the camera view is highly magnified.
 
 Enjoy ;-)
