@@ -21,9 +21,9 @@ bl_info = {
     "name": "Sync View",
     "description": "Enables twin 3D View navigation synchronization, mainly for photogrammetric support purpose",
     "author": "Vincent Bain - Toraval",
-    "version": (1, 0, 0),
-    "blender": (2, 79, 0),
-    "location": "3D View > Properties Region > View",
+    "version": (2, 0, 0),
+    "blender": (3, 00, 0),
+    "location": "3D View > UI Region > SyncView",
     "warning": "",
     "wiki_url": "",
     "tracker_url": "",
@@ -35,80 +35,92 @@ from bpy.props import IntProperty, FloatProperty
 
 
 class StvPanel(bpy.types.Panel):
-    bl_idname = "panel.stv_panel"
+    bl_idname = "VIEW3D_PT_stvPanel"
     bl_label = "Syncview settings"
+    bl_category = 'SyncView'
     bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOL_PROPS"
+    bl_region_type = "UI"
 
     def draw(self, context):
-        self.layout.prop_search(context.scene.stv_vars, "leftcam", bpy.data, "objects",icon='CAMERA_DATA')
-        self.layout.prop_search(context.scene.stv_vars, "rightcam", bpy.data, "objects",icon='CAMERA_DATA')
-        self.layout.prop(context.scene.stv_vars, "panratio")
-        self.layout.prop(context.space_data.region_3d, "lock_rotation", text="Lock View Rotation")
-        self.layout.operator('custom.stv_reset_zoom_op', text='Auto align view')
+        
+        layout = self.layout
+        scene = context.scene
+        row = layout.row()
+        row.label(text="Cameras :")
+        layout.prop(scene, "LeftCam",icon='OUTLINER_OB_CAMERA', text="Left cam")
+        layout.prop(scene, "RightCam",icon='CAMERA_DATA', text="Right cam")
+        row.operator('opr.camera_catcher_operator', text="Catch cams")
+        layout.prop(scene, "PanRatio", text="Pan ratio")
+        layout.prop(context.space_data.region_3d, "lock_rotation", text="Lock View Rotation")
+        layout.operator('custom.stv_reset_zoom_op', text='Auto align view')
+        layout.label(text="Area info:")
+        layout.prop(context.area, "width")
 
+
+def scene_mycam_poll(self, object):
+    return object.type == 'CAMERA'
 
 
 class StvResetZoomOperator(bpy.types.Operator):
     bl_idname = 'custom.stv_reset_zoom_op'
     bl_label = 'Stv Reset Zoom Op'
     bl_options = {'INTERNAL'}
+    bl_description = "Tries to reset a correct stereoscopic setup"
 
     def execute(self, context):
-        if bpy.context.space_data.camera.name == bpy.context.scene.stv_vars['rightcam']:
+        if bpy.context.space_data.camera.name == bpy.context.scene.RightCam.name:
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_zoom = bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[0] = bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[0]
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[1] = bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[1]
             self.report({'INFO'}, "Right view was successfully aligned to left view!")
-        if bpy.context.space_data.camera.name == bpy.context.scene.stv_vars['leftcam']:
+        if bpy.context.space_data.camera.name == bpy.context.scene.LeftCam.name:
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom = bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_zoom
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[0] = bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[0]
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[1] = bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[1]
             self.report({'INFO'}, "Left view was successfully aligned to right view!")
+        
         return {'FINISHED'}
 
 
 def update_cams(self, context):
     list = [0,0]
     k=0
+    l=0
     for area in bpy.data.window_managers[0].windows[0].screen.areas:
         if area.type == 'VIEW_3D':
-            if area.spaces[0].camera.name == bpy.context.scene.stv_vars['leftcam']:
+            if area.spaces[0].camera.name == bpy.context.scene.LeftCam.name:
                 list[0]=k
         k += 1
-    k=0
+    
     for area in bpy.data.window_managers[0].windows[0].screen.areas:
         if area.type == 'VIEW_3D':
-            if area.spaces[0].camera.name == bpy.context.scene.stv_vars['rightcam']:
-                list[1]=k
-        k += 1
-
+            if area.spaces[0].camera.name == bpy.context.scene.RightCam.name:
+                list[1]=l
+        l += 1
+    
     bpy.context.scene.LeftCamIndex = list[0]
     bpy.context.scene.RightCamIndex = list[1]
+    
+    bpy.context.scene.LeftCamIndex
+    bpy.context.scene.RightCamIndex
 
 
 
-class StvVariables(bpy.types.PropertyGroup):
-    leftcam = bpy.props.StringProperty(
-        name="left stv camera",
-        description="Stv left camera",
-        default='Camera_g',
-        update=update_cams
-    )
-    rightcam = bpy.props.StringProperty(
-        name="right stv camera",
-        description="Stv right camera",
-        default='Camera_d',
-        update=update_cams
-    )
-    panratio = bpy.props.FloatProperty(
-        name="stv pan",
-        description="Stv panning factor",
-        default=1,
-        soft_min=1,
-        soft_max=10,
-        update=update_cams
-    )
+class CatchCams(bpy.types.Operator):
+    bl_idname = 'opr.camera_catcher_operator'
+    bl_label = 'Camera catcher'
+    bl_description = 'Select both stereo cameras for grabbing/rotating'
+    
+    def execute(self, context):
+        bpy.ops.object.select_all(action='DESELECT')
+        for i in (bpy.context.scene.LeftCam.name, bpy.context.scene.RightCam.name):
+            obj = bpy.context.scene.objects.get(i)
+            if obj: obj.select_set(True)
+        bpy.data.scenes["Scene"].tool_settings.transform_pivot_point = "CURSOR"
+        self.report({"INFO"}, "Stereo Cams selected, ready to transform")
+        return {'FINISHED'}
+
+
 
 class ModalSyncPanOperator(bpy.types.Operator):
     """synchronously pan 3d view with mouse"""
@@ -122,14 +134,15 @@ class ModalSyncPanOperator(bpy.types.Operator):
         if event.type == 'MOUSEMOVE':
             deltax = self.init_mouse_x - event.mouse_x
             deltay = self.init_mouse_y - event.mouse_y
-            fact = 0.01 * bpy.context.scene.stv_vars['panratio']/(bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom+31)
+            fact = 0.01 * bpy.context.scene.PanRatio/(bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom+31)
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[0] += deltax * fact
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[1] += deltay * fact
-            self.init_mouse_x = event.mouse_x
-            self.init_mouse_y = event.mouse_y
-
+            
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[0] += deltax * fact
             bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[1] += deltay * fact
+            
+            self.init_mouse_x = event.mouse_x
+            self.init_mouse_y = event.mouse_y
 
         elif event.value == 'RELEASE':
             return {'FINISHED'}
@@ -139,6 +152,7 @@ class ModalSyncPanOperator(bpy.types.Operator):
     def invoke(self, context, event):
         self.init_mouse_x = event.mouse_x
         self.init_mouse_y = event.mouse_y
+        
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
@@ -148,14 +162,23 @@ class ModalSyncZoomOperator(bpy.types.Operator):
     bl_idname = "object.zoom_modal_operator"
     bl_label = "Simple Modal Operator"
 
+    init_mouse_x = IntProperty()
     init_mouse_y = IntProperty()
 
     def modal(self, context, event):
         if event.type == 'MOUSEMOVE':
-            delta = self.init_mouse_y - event.mouse_y
-            bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom -= delta * 0.25
-            bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_zoom -= delta * 0.25
+            deltax = self.init_mouse_x - event.mouse_x
+            deltay = self.init_mouse_y - event.mouse_y
+            bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom -= deltay * 0.3
+            bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_zoom -= deltay * 0.3
+            
+            fact = 0.01 * bpy.context.scene.PanRatio/(bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_zoom+31)
+            bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.LeftCamIndex].spaces[0].region_3d.view_camera_offset[0] -= deltax * fact
+            bpy.data.window_managers[0].windows[0].screen.areas[bpy.context.scene.RightCamIndex].spaces[0].region_3d.view_camera_offset[0] += deltax * fact
+            
+            self.init_mouse_x = event.mouse_x
             self.init_mouse_y = event.mouse_y
+            
 
         elif event.value == 'RELEASE':
             return {'FINISHED'}
@@ -163,6 +186,7 @@ class ModalSyncZoomOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
+        self.init_mouse_x = event.mouse_x
         self.init_mouse_y = event.mouse_y
 
         context.window_manager.modal_handler_add(self)
@@ -172,18 +196,33 @@ class ModalSyncZoomOperator(bpy.types.Operator):
 addon_keymaps = []
 
 def register():
-
+    
     bpy.utils.register_class(StvPanel)
-    bpy.utils.register_class(StvVariables)
-    bpy.utils.register_class(StvResetZoomOperator)
-    bpy.types.Scene.stv_vars = bpy.props.PointerProperty(type=StvVariables)
-
-    bpy.types.Scene.LeftCamIndex = bpy.props.IntProperty(name="Left view index", default=1)
-    bpy.types.Scene.RightCamIndex = bpy.props.IntProperty(name="Right view index", default=2)
-
     bpy.utils.register_class(ModalSyncPanOperator)
     bpy.utils.register_class(ModalSyncZoomOperator)
-
+    bpy.utils.register_class(StvResetZoomOperator)
+    bpy.utils.register_class(CatchCams)
+    
+    bpy.types.Scene.LeftCam = bpy.props.PointerProperty(
+        type=bpy.types.Object,
+        poll=scene_mycam_poll,
+        update=update_cams,
+        description="Camera used for left view frame"
+    )
+    bpy.types.Scene.RightCam = bpy.props.PointerProperty(
+        type=bpy.types.Object,
+        poll=scene_mycam_poll,
+        update=update_cams,
+        description="Camera used for right view frame"
+    )
+    bpy.types.Scene.PanRatio = bpy.props.FloatProperty(
+        name="pan ratio",default=1,
+        description = "Panning factor"
+    )
+    
+    bpy.types.Scene.LeftCamIndex = bpy.props.IntProperty(name="Left view index", default=1)
+    bpy.types.Scene.RightCamIndex = bpy.props.IntProperty(name="Right view index", default=2)
+    
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
     if kc:
@@ -198,15 +237,15 @@ def unregister():
         km.keymap_items.remove(kmp)
         km.keymap_items.remove(kmz)
         addon_keymaps.clear()
-
+    
     bpy.utils.unregister_class(ModalSyncPanOperator)
     bpy.utils.unregister_class(ModalSyncZoomOperator)
     bpy.utils.unregister_class(StvResetZoomOperator)
-
     bpy.utils.unregister_class(StvPanel)
-    bpy.utils.unregister_class(StvVariables)
+    bpy.utils.unregister_class(CatchCams)
 
-    del bpy.types.Scene.stv_vars
+    del bpy.types.Scene.LeftCam
+    del bpy.types.Scene.RightCam
 
 
 if __name__ == "__main__":
