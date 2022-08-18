@@ -7,7 +7,7 @@ This plugin turns blender into a basic photogrammetric workstation if one can pr
 - a couple of oriented and georeferenced cameras e.g. issued from a [MicMac](https://github.com/micmacIGN/micmac) reconstruction,
 - and a set of georeferenced data handled with [Blender GIS](https://github.com/domlysz/BlenderGIS).
 
-![](https://github.com/xyleme/syncview/blob/master/capture.jpg)
+![](https://github.com/xyleme/syncview/blob/master/capture_v2.jpg)
 
 My own hardware setup involves a Wild ST4 stereoscope mounted ahead of a monitor. This is a dual purpose montage initially used to make photo-interpretation.
 ![](https://github.com/xyleme/syncview/blob/master/syncview_st4_l.jpg)
